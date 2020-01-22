@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Экзаменационные билеты</title>
+<meta charset="utf-8">
+<style>
+	p {
+		font-size: 12pt;
+		font-family: Times New Roman;
+	}
+
+	h1 {
+		font-size: 12pt;
+		margin: auto;
+		text-align: center;
+	}
+
+	h2 {
+		font-size: 14pt;
+		margin: auto;
+		text-align: center;
+	}
+	td {
+	    text-align: center;
+	    background: white;
+	    color: black;
+	    border: 1px solid black;
+	    width: 14%;
+	   }
+
+	 .a4 {
+        width: 580px;   
+        padding: 30px 20px 30px 50px; 
+        margin: 50px auto;  
+        box-shadow: 10px 10px 20px black; 
+        background-color: white; 
+        margin: auto; 
+        font-family:  
+      }
+    @media print {
+	    .more {
+	     page-break-after: always;
+	    } 
+
+	} 
+</style>
+</head>
+<body>
+	<div class="a4">
+<?php
+
+$database = $_POST["bd"];
+require_once "bibl/Classes/PHPExcel.php";
+$tmpfname = $database;
+
+$excelReader = PHPExcel_IOFactory::createReaderForFile($tmpfname);
+$excelObj = $excelReader->load($tmpfname);
+$worksheet = $excelObj->getSheet(0);
+$lastRow = $worksheet->getHighestRow();
+// echo "<table>";
+// for ($row = 1; $row <= $lastRow; $row++) {
+// echo "<tr><td>";
+// echo $worksheet->getCell('A'.$row)->getValue();
+// echo "</td><td>";
+// echo $worksheet->getCell('C'.$row)->getValue();
+// echo "</td><tr>";
+// }
+// echo "</table>";
+
+	$lvl1 = $_POST["lvl1"];
+	$lvl2 = $_POST["lvl2"];
+	$lvl3 = $_POST["lvl3"];
+	$lvl0 = $_POST["lvl0"];
+	$check = $_POST["kolvo"];
+
+
+$kolvo_php = $_POST["kolvo"];
+$kolvo_b = $_POST["kolvo_bilet"];
+$kaf = $_POST["kafedra"];
+$dis = $_POST["predmet"];
+$type = $_POST["tip"];
+$rang = $_POST["sostav_rang"];
+$fio = $_POST["sostav_fio"];
+$date = $_POST["date"];
+if($kolvo_b == null) {
+	echo "<h1>!!! Вы не ввели количество билетов !!!</h1>";
+}
+
+if($lvl1+$lvl2+$lvl3+$lvl0 != $kolvo_php){
+	$kolvo_b = 0;
+	echo "<h1> !!! Количество вопросов не совпадает с суммой разноуровневых вопросов !!! </h1>";
+	echo '<p align="center">' ."Пожалуйста, вернитесь назад и корректно заполните поля </p>";
+}
+
+for($j = 1; $j<=$kolvo_b; $j++){
+	$lvlch1 = $lvl1;
+	$lvlch2 = $lvl2;
+	$lvlch3 = $lvl3;
+	$lvlch0 = $lvl0;
+	$cr = array();
+
+	echo "<h1><b>ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ БЮДЖЕТНОЕ ОБРАЗОВАТЕЛЬНОЕ";
+	echo "<br>УЧРЕЖДЕНИЕ ВЫСШЕГО ОБРАЗОВАНИЯ";
+	echo "<br>МОСКОВСКИЙ ПОЛИТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ</b></h1>";
+	echo "<hr />";
+	echo "<p><i>Кафедра:".$kaf ."<br>";
+	echo "Дисциплина:".$dis ."</i></p>";
+
+	if($type == 1)
+	{
+		echo "<p>Студент _______ курса ____________ группы </p>";
+		echo "<p>Ф.И.О. _____________________________________________</p>";
+		echo '<p align="right">' ."Дата: ___.___.20___г." .'</p>';
+		echo '<p align="right">' ."Подпись: ____________" .'</p>';
+		echo "<br><br>";
+	}
+
+	echo "<h2><b>ЭКЗАМЕНАЦИОННЫЙ БИЛЕТ №".$j."</b></h2>";
+
+	// генератор вопросов
+	for($i = 1; $i<=$kolvo_php; $i++)
+	{
+		
+		$k = 0;
+		while($k == 0)
+		{
+			$r = rand(2,$lastRow);
+			$k = 1;
+			foreach ($cr as $value) {
+				if($r == $value){
+					$k = 0;
+					break;
+				}
+			}
+		}
+		array_push($cr, $r);
+		echo "<p>";
+		if($lvlch1 != 0){
+			echo $i .". ";
+		 	echo $worksheet->getCell('A'.$r)->getValue();
+		 	$lvlch1-=1;
+		 } else if($lvlch2 != 0){
+		 	echo $i .". ";
+		 	echo $worksheet->getCell('C'.$r)->getValue();
+		 	$lvlch2-=1;
+		 } else if($lvlch3 != 0){
+		 	echo $i .". ";
+		 	echo $worksheet->getCell('E'.$r)->getValue();
+		 	$lvlch3-=1;
+		 } else if($lvlch0 != 0){
+		 	echo $i .". ";
+		 	echo $worksheet->getCell('G'.$r)->getValue();
+		 	$lvlch0-=1;
+		 }
+	 	echo "</p>";
+	}
+
+	if($type == 1)
+	{
+		echo '<table border="1" height="150" width="580">';
+		echo '<tr height="50" width="60">'."<td></td>";
+		for($h = 1; $h<=$kolvo_php; $h++)
+		{
+			echo '<td>' .$h .'</td>';
+		}
+		echo '<td>' ."Итого" .'</td>';
+		echo "</tr><td>Оценка</td";
+		for($h = -1; $h<=$kolvo_php; $h++)
+		{
+			echo '<td></td>';
+		}
+		echo "</tr><td>Подпись</td";
+		for($h = -1; $h<=$kolvo_php; $h++)
+		{
+			echo '<td></td>';
+		}
+		echo "</table>";
+	}
+
+	echo "<p>Составил: ".$rang ." <u>" .$fio ."</u>   _______________(подпись)</p>";
+	echo "<p>Дата: <u>".$date ."</u></p>";
+	echo "<br><hr />";
+	//$hi = $j%2;
+	if($type == 2){
+		if(($j%2)==0)	{
+			echo '<p class="more">' ." " .'</p>';
+		}
+	} else {
+		echo '<p class="more">' ." " .'</p>';
+	}
+}
+?>
+</div>
+</body>
+</html>
